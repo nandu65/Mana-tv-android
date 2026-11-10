@@ -122,9 +122,27 @@ class PlaylistRepository(private val db: AppDatabase) {
             )
 
             db.playlistDao().insertPlaylist(playlistEntity)
-            db.channelDao().insertChannels(channels)
+            channels.chunked(300).forEach { chunk ->
+                db.channelDao().insertChannels(chunk)
+            }
 
             Result.success(playlistEntity.toDomain())
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun ensureDefaultPlaylist(name: String, url: String): Result<Playlist> = withContext(Dispatchers.IO) {
+        try {
+            val all = db.playlistDao().getAllPlaylists().firstOrNull() ?: emptyList()
+            val existing = all.find { it.sourceUrl?.trim() == url.trim() }
+            if (existing != null) {
+                return@withContext Result.success(existing.toDomain())
+            }
+            if (all.isEmpty()) {
+                return@withContext loadPlaylistFromUrl(name, url)
+            }
+            Result.failure(IllegalStateException("Playlists already configured"))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -149,7 +167,9 @@ class PlaylistRepository(private val db: AppDatabase) {
             )
 
             db.playlistDao().insertPlaylist(playlistEntity)
-            db.channelDao().insertChannels(channels)
+            channels.chunked(300).forEach { chunk ->
+                db.channelDao().insertChannels(chunk)
+            }
 
             Result.success(playlistEntity.toDomain())
         } catch (e: Exception) {
@@ -197,7 +217,9 @@ class PlaylistRepository(private val db: AppDatabase) {
             }
 
             db.channelDao().deleteChannelsByPlaylist(playlistId)
-            db.channelDao().insertChannels(updatedChannels)
+            updatedChannels.chunked(300).forEach { chunk ->
+                db.channelDao().insertChannels(chunk)
+            }
             db.playlistDao().insertPlaylist(
                 playlist.copy(
                     channelCount = updatedChannels.size,

@@ -18,6 +18,7 @@ import com.m3uplayer.tv.sports.data.repository.SportsRepository
 import com.m3uplayer.tv.sports.ui.screens.SportsHomeScreen
 import com.m3uplayer.tv.ui.screens.*
 import com.m3uplayer.tv.ui.theme.*
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 enum class Screen {
@@ -31,6 +32,11 @@ enum class Screen {
 }
 
 class MainActivity : ComponentActivity() {
+
+    companion object {
+        const val DEFAULT_PLAYLIST_URL = "https://iptv-org.github.io/iptv/index.m3u"
+        const val DEFAULT_PLAYLIST_NAME = "Mana TV Channels"
+    }
 
     private lateinit var database: AppDatabase
     private lateinit var repository: PlaylistRepository
@@ -156,6 +162,47 @@ class MainActivity : ComponentActivity() {
 
                     val playlists by repository.getAllPlaylists().collectAsState(initial = emptyList())
                     var activePlaylistId by remember { mutableStateOf<String?>(null) }
+                    var isDefaultSeeding by remember { mutableStateOf(false) }
+
+                    // Ensure default Mana TV playlist (https://iptv-org.github.io/iptv/index.m3u) is always present and primary
+                    LaunchedEffect(Unit) {
+                        val all = repository.getAllPlaylists().firstOrNull() ?: emptyList()
+                        val defaultPlaylist = all.find { it.sourceUrl?.trim() == DEFAULT_PLAYLIST_URL }
+                        if (defaultPlaylist == null) {
+                            isDefaultSeeding = true
+                            // Clean up legacy sample demo if it was the only one
+                            val samplePl = all.find { it.sourceType == "sample" }
+                            if (samplePl != null && all.size == 1) {
+                                repository.deletePlaylist(samplePl.id)
+                            }
+                            val res = repository.loadPlaylistFromUrl(DEFAULT_PLAYLIST_NAME, DEFAULT_PLAYLIST_URL)
+                            isDefaultSeeding = false
+                            if (res.isSuccess) {
+                                activePlaylistId = res.getOrNull()?.id
+                                completeWelcome()
+                            }
+                        } else if (activePlaylistId == null) {
+                            activePlaylistId = defaultPlaylist.id
+                        }
+                    }
+
+                    fun loadDefaultManaTvPlaylist() {
+                        lifecycleScope.launch {
+                            isDialogLoading = true
+                            dialogError = null
+                            val result = repository.loadPlaylistFromUrl(DEFAULT_PLAYLIST_NAME, DEFAULT_PLAYLIST_URL)
+                            isDialogLoading = false
+                            if (result.isSuccess) {
+                                activePlaylistId = result.getOrNull()?.id
+                                completeWelcome()
+                                isAddDialogOpen = false
+                                currentScreen = Screen.HOME
+                                Toast.makeText(this@MainActivity, "Loaded Mana TV Channels", Toast.LENGTH_SHORT).show()
+                            } else {
+                                dialogError = result.exceptionOrNull()?.message ?: "Failed to load default playlist"
+                            }
+                        }
+                    }
 
                     // Auto-select first playlist if not set
                     LaunchedEffect(playlists) {
@@ -250,11 +297,7 @@ class MainActivity : ComponentActivity() {
                         Screen.SPLASH -> {
                             SplashScreen(
                                 onSplashFinished = {
-                                    if (!isFirstRunCompleted && playlists.isEmpty()) {
-                                        currentScreen = Screen.WELCOME
-                                    } else {
-                                        currentScreen = Screen.HOME
-                                    }
+                                    currentScreen = Screen.HOME
                                 }
                             )
                         }
@@ -265,14 +308,7 @@ class MainActivity : ComponentActivity() {
                                     isAddDialogOpen = true
                                 },
                                 onLoadSample = {
-                                    completeWelcome()
-                                    lifecycleScope.launch {
-                                        val result = repository.loadPlaylistFromContent("Sample Demo Playlist", sampleM3uContent, "sample")
-                                        if (result.isSuccess) {
-                                            activePlaylistId = result.getOrNull()?.id
-                                        }
-                                        currentScreen = Screen.HOME
-                                    }
+                                    loadDefaultManaTvPlaylist()
                                 },
                                 welcomeAudioVolume = welcomeAudioVolume,
                                 welcomeAudioEnabled = welcomeAudioEnabled
@@ -322,13 +358,12 @@ class MainActivity : ComponentActivity() {
                                 onOpenAddPlaylist = { isAddDialogOpen = true },
                                 onOpenSettings = { currentScreen = Screen.SETTINGS },
                                 onLoadSample = {
-                                    lifecycleScope.launch {
-                                        repository.loadPlaylistFromContent("Sample Demo Playlist", sampleM3uContent, "sample")
-                                    }
+                                    loadDefaultManaTvPlaylist()
                                 },
                                 welcomeAudioVolume = welcomeAudioVolume,
                                 welcomeAudioEnabled = welcomeAudioEnabled,
-                                isRefreshing = isRefreshing
+                                isRefreshing = isRefreshing,
+                                isDefaultSeeding = isDefaultSeeding
                             )
                         }
 
@@ -458,15 +493,7 @@ class MainActivity : ComponentActivity() {
                             }
                         },
                         onLoadSample = {
-                            completeWelcome()
-                            lifecycleScope.launch {
-                                val result = repository.loadPlaylistFromContent("Sample Demo Playlist", sampleM3uContent, "sample")
-                                if (result.isSuccess) {
-                                    activePlaylistId = result.getOrNull()?.id
-                                    isAddDialogOpen = false
-                                    currentScreen = Screen.HOME
-                                }
-                            }
+                            loadDefaultManaTvPlaylist()
                         }
                     )
                 }

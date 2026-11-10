@@ -59,6 +59,7 @@ fun HomeScreen(
     welcomeAudioVolume: Int = 150,
     welcomeAudioEnabled: Boolean = true,
     isRefreshing: Boolean = false,
+    isDefaultSeeding: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val uiPrefs = LocalUiPreferences.current
@@ -68,6 +69,33 @@ fun HomeScreen(
     var favoriteCategoryFilter by remember { mutableStateOf("All") }
 
     if (playlists.isEmpty()) {
+        if (isDefaultSeeding) {
+            Box(
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(Color(0xFF090B10)),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator(color = AccentBlue, modifier = Modifier.size(54.dp), strokeWidth = 4.dp)
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Text(
+                        text = "Loading default Mana TV playlist...",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "https://iptv-org.github.io/iptv/index.m3u",
+                        color = TextSecondary,
+                        fontSize = 13.sp
+                    )
+                }
+            }
+            return
+        }
+
         WelcomeScreen(
             onOpenAddPlaylist = onOpenAddPlaylist,
             onLoadSample = onLoadSample,

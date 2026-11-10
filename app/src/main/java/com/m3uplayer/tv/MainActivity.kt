@@ -76,6 +76,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Initialize thumbnail storage protection: caps cache to 80MB & auto-deletes files older than 7 days
+        com.m3uplayer.tv.util.ThumbnailCacheManager.initialize(this)
+
         database = AppDatabase.getDatabase(this)
         repository = PlaylistRepository(database)
         playerManager = PlayerManager(this)

@@ -37,8 +37,16 @@ val FavoriteYellow = Color(0xFFFACC15)
 val LiveRed = Color(0xFFEF4444)
 
 // Defaults
-val BgMain = Color(0xFF0D0F14)
+val BgMain = Color(0xFF070B14)
 val BgCard = Color(0xFF151821)
 val BgCardHover = Color(0xFF1E2433)
 val AccentBlue = Color(0xFF3B82F6)
 val AccentBlueGlow = Color(0xFF60A5FA)
+
+// Glassmorphism & Water Aesthetic Tints
+val GlassPanel = Color(0xB30C1222)
+val GlassCard = Color(0x8C162035)
+val GlassCardHover = Color(0xD91E2E50)
+val GlassBorder = Color(0x24FFFFFF)
+val GlassBorderGlow = Color(0x7360A5FA)
+val WaterBubbleHighlight = Color(0x40FFFFFF)

@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Mana TV</string>
+    <string name="welcome_title">Mana TV</string>
+    <string name="welcome_subtitle">Stream live TV channels on your Android TV.</string>
+    <string name="add_m3u_url">Add M3U URL</string>
+    <string name="select_m3u_file">Open Local M3U File</string>
+    <string name="try_sample_demo">Try Sample Demo Streams</string>
+    <string name="home">Home</string>
+    <string name="favorites">Favorites</string>
+    <string name="all_channels">All Channels</string>
+    <string name="continue_watching">Continue Watching</string>
+    <string name="categories">Categories</string>
+    <string name="search_hint">Search channels, categories...</string>
+    <string name="settings">Settings</string>
+    <string name="no_channels_found">No channels found matching your search.</string>
+</resources>

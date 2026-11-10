@@ -4,6 +4,7 @@ enum class SportsProvider(val displayName: String, val badgeColorHex: Long, val 
     ALL("All Providers", 0xFF3B82F6, null, ""),
     FANCODE("FanCode", 0xFFF97316, "com.fancode.android", "https://www.fancode.com"),
     SONYLIV("SonyLIV", 0xFF0EA5E9, "com.sonyliv", "https://www.sonyliv.com"),
+    JIOHOTSTAR("JioHotstar", 0xFFE11D48, "in.startv.hotstar", "https://www.hotstar.com"),
     TATAPLAY("Tata Play", 0xFF8B5CF6, "com.ryzmedia.tatasky", "https://www.tataplay.com"),
     WILLOW("Willow", 0xFF10B981, "tv.willow", "https://www.willow.tv")
 }

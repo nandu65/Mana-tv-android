@@ -15,6 +15,7 @@ class SportsRepository {
     private val adapters: Map<SportsProvider, ISportsProviderAdapter> = mapOf(
         SportsProvider.FANCODE to FanCodeAdapter(),
         SportsProvider.SONYLIV to SonyLIVAdapter(),
+        SportsProvider.JIOHOTSTAR to JioHotstarAdapter(),
         SportsProvider.TATAPLAY to TataPlayAdapter(),
         SportsProvider.WILLOW to WillowAdapter()
     )
